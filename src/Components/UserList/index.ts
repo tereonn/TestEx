@@ -1,6 +1,6 @@
 import express from 'express'
 import { userListOffsValidator } from './validators';
-import { readUserListWithRankCheckPaginated } from '../../DB/Components/UserList';
+import { readUserListWithRankCheckPaginated, getUserRowsNumber } from '../../DB/Components/UserList';
 
 
 interface RequestWithOffset extends Request {
@@ -13,15 +13,21 @@ export async function limitedUserReader(req: express.Request, res: express.Respo
     try {
         const offset = (req as unknown as RequestWithOffset).query.offset;
         const validationResult = userListOffsValidator(offset)
+        const usersOnPage = 20;
+        const minimalRank = 20;
 
         if (!validationResult.isValid) {
             throw new Error(validationResult.message);
         }
 
-        const dbRes = await readUserListWithRankCheckPaginated(20, offset, 10);
+        const queryResults = await Promise.all([readUserListWithRankCheckPaginated(minimalRank, offset, usersOnPage), getUserRowsNumber()]);
 
-        res.send(dbRes);
-
+        res.send({
+            total: queryResults[1],
+            userCount: usersOnPage,
+            page: offset,
+            users: queryResults[0],
+        });
 
     } catch (e) {
         res.send({

@@ -1,13 +1,10 @@
+import { validationResult } from "../Shared/types";
 
 const VAL_ERROR_OFFS_NOT_NUM = 'Val err, offs is not a num';
 const VAL_ERROR_OFFS_TOO_LOW = 'Val err, offs must be greater than 1';
 
-interface validationError {
-    isValid: boolean;
-    message: string;
-}
 
-export function userListOffsValidator(offs: any): validationError  {
+export function userListOffsValidator(offs: any): validationResult  {
     const value = Number(offs);
     if (isNaN(value)) {
         return {
